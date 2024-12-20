@@ -1,12 +1,17 @@
 const env = require("dotenv/config");
-const OpenAIApi = require("openai");
+const { OpenAIApi } = require("openai");
 
 const callAi = async (messages) => {
   const openai = new OpenAIApi({ apiKey: env.OPENAI_API_KEY });
+
+  if (!messages) {
+    throw new Error("Les messages ne peuvent pas être vides.");
+  }
+
   try {
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
-      messages: messages,
+      messages,
       temperature: 1,
       max_tokens: 2048,
       top_p: 1,
@@ -14,12 +19,11 @@ const callAi = async (messages) => {
       presence_penalty: 0,
     });
 
-    const message = response.choices[0].message.content;
-
-    return message;
+    return response.choices[0].message.content;
   } catch (error) {
-    console.error(error);
-    return "Une erreur est survenue lors de la communication avec OpenAI.";
+    console.error("Erreur lors de la communication avec OpenAI :", error);
+    throw error; // Propagation de l'erreur pour une gestion plus flexible
   }
 };
+
 module.exports = callAi;
